@@ -6,13 +6,13 @@ handle_error() {
 }
 
 if ! command -v pipenv &> /dev/null; then
-    echo "pipenv could not be found"
+    handle_error "pipenv could not be found"
 fi
 
 echo "Installing dependencies..."
 pipenv install || handle_error "Failed to install dependencies"
 
 echo "Starting HTTP server..."
-pipenv run server
+pipenv run python main/main.py "$@"
 
 exit 0
