@@ -13,16 +13,31 @@ def responseMessage(request):
     method = parts[0]
     if method == "GET":
         if path == "/":
-            return "HTTP/1.1 200 OK\r\n\r\n"
+            return "HTTP/1.1 200 OK\r\n\r\n".encode()
         elif path.startswith("/echo/"):
             content = path[6:]
-            return (
-                f"HTTP/1.1 200 OK\r\n"
-                f"Content-Type: text/plain\r\n"
-                f"Content-Length: {len(content)}\r\n"
-                f"\r\n"
-                f"{content}"
-            )
+            encodings = []
+            if "Accept-Encoding: " in request:
+                encodings = request.split("Accept-Encoding: ")[1].split("\r\n")[0].split(", ")
+            if encodings and "gzip" in encodings:
+                import gzip
+                content = gzip.compress(content.encode())
+                return (
+                    f"HTTP/1.1 200 OK\r\n"
+                    f"Content-Type: text/plain\r\n"
+                    f"Content-Encoding: gzip\r\n"
+                    f"Content-Length: {len(content)}\r\n"
+                    f"\r\n"
+                    f"{content.hex()}"
+                ).encode()
+            else:
+                return (
+                    f"HTTP/1.1 200 OK\r\n"
+                    f"Content-Type: text/plain\r\n"
+                    f"Content-Length: {len(content)}\r\n"
+                    f"\r\n"
+                    f"{content}"
+                ).encode()
         elif path == "/user-agent":
             userAgent = request.split("User-Agent: ")[1].split("\r\n")[0]
             return (
@@ -31,7 +46,7 @@ def responseMessage(request):
                 f"Content-Length: {len(userAgent)}\r\n"
                 f"\r\n"
                 f"{userAgent}"
-            )
+            ).encode()
         elif path.startswith("/files/"):
             file = path[7:]
             if os.path.isfile(file):
@@ -43,26 +58,26 @@ def responseMessage(request):
                     f"Content-Length: {len(content)}\r\n"
                     f"\r\n"
                     f"{content.decode()}"
-                )
+                ).encode()
             else:
-                return "HTTP/1.1 404 Not Found\r\n\r\n"
+                return "HTTP/1.1 404 Not Found\r\n\r\n".encode()
         else:
-            return "HTTP/1.1 404 Not Found\r\n\r\n"
+            return "HTTP/1.1 404 Not Found\r\n\r\n".encode()
     elif method == "POST":
         if path.startswith("/files/"):
             file = path[7:]
             content = request.split("\r\n\r\n")[1]
             with open(file, 'wb') as f:
                 f.write(content.encode())
-            return "HTTP/1.1 201 Created\r\n\r\n"
+            return "HTTP/1.1 201 Created\r\n\r\n".encode()
         else:
-            return "HTTP/1.1 404 Not Found\r\n\r\n"
+            return "HTTP/1.1 404 Not Found\r\n\r\n".encode()
     
 def handle_client(connection):
     request = connection.recv(1024).decode()
     print(request)
     response = responseMessage(request)
-    connection.sendall(response.encode())
+    connection.sendall(response)
     connection.close()
 
 
