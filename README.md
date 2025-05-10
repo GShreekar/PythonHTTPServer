@@ -5,11 +5,11 @@ This is a simple HTTP server implemented in Python. It supports basic GET and PO
 ## Features
 - Serve files from a specified directory.
 - Handle GET requests for:
-  - Root (`/`)
-  - Echo (`/echo/<message>`)
-  - User-Agent (`/user-agent`)
-  - Files (`/files/<filename>`)
-- Handle POST requests to upload files to the server (`/files/<filename>`).
+  - Root (`/`) - Returns a basic HTTP 200 response.
+  - Echo (`/echo/<message>`) - Returns the `<message>` in the response body. Supports gzip compression if requested.
+  - User-Agent (`/user-agent`) - Returns the `User-Agent` header from the request.
+  - Files (`/files/<filename>`) - Serves the specified file if it exists.
+- Handle POST requests to upload files to the server (`/files/<filename>`). Creates the file with the provided content.
 
 ## Requirements
 - Python 3
@@ -28,4 +28,8 @@ This is a simple HTTP server implemented in Python. It supports basic GET and PO
 
 ## Usage
 - Access the server at `http://localhost:4221`.
-- Use tools like `curl` to interact with the server.
+- Use tools like `curl` or to interact with the server.
+
+## Notes
+- Ensure the specified directory exists and contains the files you want to serve.
+- The server listens on `localhost:4221` by default.
